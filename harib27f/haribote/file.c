@@ -43,19 +43,19 @@ struct FILEINFO *file_search(char *name, struct FILEINFO *finfo, int max)
 	}
 	j = 0;
 	for (i = 0; name[i] != 0; i++) {
-		if (j >= 11) { return 0; /* 尒偮偐傜側偐偭偨 */ }
+		if (j >= 11) { return 0; /* 没找到 */ }
 		if (name[i] == '.' && j <= 8) {
 			j = 8;
 		} else {
 			s[j] = name[i];
 			if ('a' <= s[j] && s[j] <= 'z') {
-				/* 彫暥帤偼戝暥帤偵捈偡 */
+				/* 小写字母转化成大写字母 */
 				s[j] -= 0x20;
 			} 
 			j++;
 		}
 	}
-	for (i = 0; i < max; ) {
+	for (i = 0; i < max; ) {//max最多只能是224 
 		if (finfo->name[0] == 0x00) {
 			break;
 		}
@@ -65,12 +65,12 @@ struct FILEINFO *file_search(char *name, struct FILEINFO *finfo, int max)
 					goto next;
 				}
 			}
-			return finfo + i; /* 僼傽僀儖偑尒偮偐偭偨 */
+			return finfo + i; /* 找到文件 */
 		}
 next:
 		i++;
 	}
-	return 0; /* 尒偮偐傜側偐偭偨 */
+	return 0; /* 没有找到 */
 }
 
 char *file_loadfile2(int clustno, int *psize, int *fat)
