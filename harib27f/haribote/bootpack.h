@@ -277,6 +277,7 @@ struct FILEHANDLE {
 	int size;
 	int pos;
 };
+
 #define MaxRow	10;
 void console_task(struct SHEET *sheet, int memtotal);//?????????? 
 void cons_putchar(struct CONSOLE *cons, int chr, char move);//??? 
@@ -296,9 +297,13 @@ void cmd_min1(struct CONSOLE *cons);
 void cmd_num1(struct CONSOLE *cons);
 void cmd_num2(struct CONSOLE *cons);
 void cmd_num3(struct CONSOLE *cons);
-int TestAndSet(int *target);//Ê¹ÓÃTestAndSet·½·¨
+int TestAndSet(int *target);//Ê¹ï¿½ï¿½TestAndSetï¿½ï¿½ï¿½ï¿½
 void TASin(int No);
 void TASout(int No);
+void wait(int *sem);
+void signal(int *sem);
+void producer(struct CONSOLE *cons);
+void consumer(struct CONSOLE *cons);
 int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline);//??????????????????????????????????????????? 
 int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax);
 int *inthandler0d(int *esp);

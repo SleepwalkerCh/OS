@@ -8,6 +8,15 @@ int compete_num=1;
 int waiting[10];
 int lock=0;
 int row_num=0;
+int buffersize=5;//total buffer
+int listsize=0;//ÂΩìÂâçÂ§ßÂ∞è
+int block=0;//lock
+int empty=5;
+int full=0;
+int mutex=1;
+int count=1;
+int list[5] = {0, 0, 0, 0, 0};
+
 void console_task(struct SHEET *sheet, int memtotal)
 {
 	struct TASK *task = task_now();
@@ -30,7 +39,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 		timer_init(cons.timer, &task->fifo, 1);
 		timer_settime(cons.timer, 50);
 	}
-	file_readfat(fat, (unsigned char *) (ADR_DISKIMG + 0x000200));//??????????ß÷?FAT?????
+	file_readfat(fat, (unsigned char *) (ADR_DISKIMG + 0x000200));//??????????¬ß√ñ?FAT?????
 	for (i = 0; i < 8; i++) {
 		fhandle[i].buf = 0;	/* ???g?p?}?[?N */
 	}
@@ -85,7 +94,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 				if (i == 8 + 256) {
 					/* ???? */
 					if (cons.cur_x > 16) {
-						/* ?????????????????¶À */
+						/* ?????????????????¬¶√ã */
 						cons_putchar(&cons, ' ', 0);
 						cons.cur_x -= 8;
 					}
@@ -104,7 +113,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 				} else {
 					/* ?????? */
 					if (cons.cur_x < 240) {
-						/* ?????????????????¶À */
+						/* ?????????????????¬¶√ã */
 						cmdline[cons.cur_x / 8 - 2] = i - 256;
 						cons_putchar(&cons, i - 256, 1);
 					}
@@ -143,7 +152,7 @@ void cons_putchar(struct CONSOLE *cons, int chr, char move)
 	} else if (s[0] == 0x0a) {	/* ???s */
 		cons_newline(cons);
 	} else if (s[0] == 0x0d) {	/* ???A */
-		/* ??≥¶??????????? */
+		/* ??¬≥¬¶??????????? */
 	} else {	/* ???????? */
 		if (cons->sht != 0) {
 			putfonts8_asc_sht(cons->sht, cons->cur_x, cons->cur_y, COL8_FFFFFF, COL8_000000, s, 1);
@@ -223,18 +232,22 @@ void cons_runcmd(char *cmdline/*??????????*/, struct CONSOLE *cons, int *fat, in
 	} else if (strncmp(cmdline, "langmode ", 9) == 0) {
 		cmd_langmode(cons, cmdline);
 	} else if (strcmp(cmdline,"add1") == 0){
-		cmd_add1(cons);//?ß‡??? ??
+		cmd_add1(cons);//?¬ß√†??? ??
 	} else if (strcmp(cmdline,"min1") == 0){
-		cmd_min1(cons);//?ß‡??? ??
+		cmd_min1(cons);//?¬ß√†??? ??
 	} else if (strcmp(cmdline,"num1") == 0){
 		cmd_num1(cons);//????????? ??
 	} else if (strcmp(cmdline,"num2") == 0){
 		cmd_num2(cons);//????????? ??
 	} else if (strcmp(cmdline,"num3") == 0){
 		cmd_num3(cons);//????????? ??
+	} else if (strcmp(cmdline,"producer") == 0){
+		producer(cons);//????????? ??
+	} else if (strcmp(cmdline,"consumer") == 0){
+		consumer(cons);//????????? ??
 	} else if (cmdline[0] != 0) {
 		if (cmd_app(cons, fat, cmdline) == 0) {
-			/* ???????????????ß‘??????????? */
+			/* ???????????????¬ß√î??????????? */
 			cons_putstr0(cons, "Bad command.\n\n");
 		}
 	}
@@ -316,7 +329,7 @@ void cmd_num1(struct CONSOLE *cons)
 	do{
 		TASin(rowNo);
 
-		//¡ŸΩÁ«¯
+		//√Å√ô¬Ω√ß√á√∏
 		compete_num=1;
 		for(i=0;i<=30000;i++){
 			sprintf(s,"%d",compete_num);
@@ -341,7 +354,7 @@ void cmd_num2(struct CONSOLE *cons)
 	do{
 		TASin(rowNo);
 
-		//¡ŸΩÁ«¯
+		//√Å√ô¬Ω√ß√á√∏
 		compete_num=2;
 		for(i=0;i<=30000;i++){
 			sprintf(s,"%d",compete_num);
@@ -368,7 +381,7 @@ void cmd_num3(struct CONSOLE *cons)
 	
 		TASin(rowNo);
 
-		//¡ŸΩÁ«¯
+		//√Å√ô¬Ω√ß√á√∏
 		compete_num=3;
 		for(i=0;i<=30000;i++){
 			sprintf(s,"%d",compete_num);
@@ -379,6 +392,108 @@ void cmd_num3(struct CONSOLE *cons)
 	} while (1==1);
 	
 }
+//////////////////////////////////////////////////
+void wait(int *sem){
+	char s[20];
+	while (*sem<=0){
+		sprintf(s,"%d",sem);
+	}
+		
+	
+	*sem-=1;
+}
+void signal(int *sem){
+	*sem+=1;
+}
+
+void producer(struct CONSOLE *cons){
+	int i,j;
+	char s[10];
+	do{
+		wait(&empty);
+
+		wait(&mutex);
+
+		sprintf(s,"producing\n");
+		cons_putstr0(cons, s);
+
+		//ÂêëÊï∞ÁªÑlistÂ§¥ÈÉ®ÂÜôÂÖ•‰∏Ä‰∏™ÂÄº
+		for (i = 0; i < buffersize;i++)
+		{
+			if (list[i]==0) break;
+		}
+		j=i;
+		for (i=j;i>0;i--)
+		{
+			list[i]=list[i-1];
+		}
+		list[0]=count++;
+
+		for (i = 0; i < 300000000; ++i);
+	
+		//printËæìÂá∫Êï∞ÁªÑÂÜÖÂÆπ
+		for (i = 0; i < buffersize; i++)
+		{
+			sprintf(s,"%d",list[i]);
+			cons_putstr0(cons, s);
+		}
+		sprintf(s,"\n");
+		cons_putstr0(cons, s);
+
+		sprintf(s,"finish\n");
+		cons_putstr0(cons, s);
+
+		
+		
+
+		signal(&mutex);
+		signal(&full);
+		for (i = 0; i < 30000000; ++i);
+	}while(1==1);
+}
+
+void consumer(struct CONSOLE *cons){
+	char s[10];
+	int i;
+	do{
+		wait(&full);
+		wait(&mutex);
+
+		sprintf(s,"consuming\n");
+		cons_putstr0(cons, s);
+
+		//Âà†Èô§Êï∞ÁªÑÊúÄÂêé‰∏Ä‰∏™ÂÜÖÂÆπ
+		for (i = buffersize-1; i >=0; i--)
+		{
+			if(list[i]!=0){
+				list[i]=0;
+				break;
+			}
+		}
+		
+
+		for (i = 0; i < 300000000; ++i);
+
+		//printËæìÂá∫Êï∞ÁªÑÂÜÖÂÆπ
+		for (i = 0; i < buffersize; i++)
+		{
+			sprintf(s,"%d",list[i]);
+			cons_putstr0(cons, s);
+		}
+		sprintf(s,"\n");
+		cons_putstr0(cons, s);
+
+		sprintf(s,"finish\n");
+		cons_putstr0(cons, s);
+
+		signal(&mutex);
+		signal(&empty);	
+		for (i = 0; i < 30000000; ++i);
+	}while(1==1);
+}
+
+////////////////////////////////////////////////
+
 void cmd_mem(struct CONSOLE *cons, int memtotal)
 {
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
@@ -458,7 +573,7 @@ void cmd_start(struct CONSOLE *cons, char *cmdline, int memtotal)
 	int i;
 	sheet_slide(sht, 32, 4);
 	sheet_updown(sht, shtctl->top);
-	/* ????????????????????????????????ß’????? */
+	/* ????????????????????????????????¬ß√ï????? */
 	for (i = 6; cmdline[i] != 0; i++) {
 		fifo32_put(fifo, cmdline[i] + 256);
 	}
@@ -472,7 +587,7 @@ void cmd_ncst(struct CONSOLE *cons, char *cmdline, int memtotal)
 	struct TASK *task = open_constask(0, memtotal);
 	struct FIFO32 *fifo = &task->fifo;
 	int i;
-	/* ????????????????????????????????ß’????? */
+	/* ????????????????????????????????¬ß√ï????? */
 	for (i = 5; cmdline[i] != 0; i++) {
 		fifo32_put(fifo, cmdline[i] + 256);
 	}
@@ -532,9 +647,9 @@ int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 		p = file_loadfile2(finfo->clustno, &appsiz, fat);//??????????????? 
 		if (appsiz >= 36 && strncmp(p + 4, "Hari", 4) == 0 && *p == 0x00) {/*22.5*/
 			//???????bin2hrb?????hrb???????4~7????????"Hari" 
-			segsiz = *((int *) (p + 0x0000));//????????????®Æ????????????¶ƒ?ß≥ 
+			segsiz = *((int *) (p + 0x0000));//????????????¬®¬Æ????????????¬¶√Ñ?¬ß¬≥ 
 			esp    = *((int *) (p + 0x000c));//ESP??????????????????????? 
-			datsiz = *((int *) (p + 0x0010));//hrb??????????????ß≥ 
+			datsiz = *((int *) (p + 0x0010));//hrb??????????????¬ß¬≥ 
 			dathrb = *((int *) (p + 0x0014));//hrb???????????????? 
 			q = (char *) memman_alloc_4k(memman, segsiz);
 			task->ds_base = (int) q;
@@ -551,7 +666,7 @@ int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 			for (i = 0; i < MAX_SHEETS; i++) {
 				sht = &(shtctl->sheets0[i]);
 				if ((sht->flags & 0x11) == 0x11 && sht->task == task) {
-					/* ???????®Æ??????????? */
+					/* ???????¬®¬Æ??????????? */
 					sheet_free(sht);	/* ??? */
 				}
 			}
@@ -607,7 +722,7 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 		sheet_setbuf(sht, (char *) ebx + ds_base, esi, edi, eax);
 		make_window8((char *) ebx + ds_base, esi, edi, (char *) ecx + ds_base, 0);
 		sheet_slide(sht, ((shtctl->xsize - esi) / 2) & ~3, (shtctl->ysize - edi) / 2);
-		sheet_updown(sht, shtctl->top); /* ????}?E?X?????????????êï??w??F ?}?E?X????????? */
+		sheet_updown(sht, shtctl->top); /* ????}?E?X?????????????¬ê‚Ä¢??w??F ?}?E?X????????? */
 		reg[7] = (int) sht;
 	} else if (edx == 6) {
 		sht = (struct SHEET *) (ebx & 0xfffffffe);
@@ -626,10 +741,10 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 		ecx &= 0xfffffff0;	/* 16?o?C?g?P??? */
 		memman_free((struct MEMMAN *) (ebx + ds_base), eax, ecx);
 	} else if (edx == 9) {
-		ecx = (ecx + 0x0f) & 0xfffffff0; /* 16?o?C?g?P?????•∞ */
+		ecx = (ecx + 0x0f) & 0xfffffff0; /* 16?o?C?g?P?????¬•¬∞ */
 		reg[7] = memman_alloc((struct MEMMAN *) (ebx + ds_base), ecx);
 	} else if (edx == 10) {
-		ecx = (ecx + 0x0f) & 0xfffffff0; /* 16?o?C?g?P?????•∞ */
+		ecx = (ecx + 0x0f) & 0xfffffff0; /* 16?o?C?g?P?????¬•¬∞ */
 		memman_free((struct MEMMAN *) (ebx + ds_base), eax, ecx);
 	} else if (edx == 11) {
 		sht = (struct SHEET *) (ebx & 0xfffffffe);
