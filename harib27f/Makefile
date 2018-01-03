@@ -7,12 +7,12 @@ IMGTOL   = $(TOOLPATH)imgtol.com
 COPY     = copy
 DEL      = del
 
-# 僨僼僅儖僩摦嶌
+# 默认动作
 
 default :
 	$(MAKE) haribote.img
 
-# 僼傽僀儖惗惉婯懃
+# 文件生成规则
 
 haribote.img : haribote/ipl09.bin haribote/haribote.sys Makefile \
 		a/a.hrb hello3/hello3.hrb hello4/hello4.hrb hello5/hello5.hrb \
@@ -23,7 +23,8 @@ haribote.img : haribote/ipl09.bin haribote/haribote.sys Makefile \
 		sosu/sosu.hrb sosu2/sosu2.hrb sosu3/sosu3.hrb \
 		type/type.hrb iroha/iroha.hrb chklang/chklang.hrb \
 		notrec/notrec.hrb bball/bball.hrb invader/invader.hrb \
-		calc/calc.hrb tview/tview.hrb mmlplay/mmlplay.hrb gview/gview.hrb
+		calc/calc.hrb tview/tview.hrb mmlplay/mmlplay.hrb gview/gview.hrb \
+		test1/test1.hrb crack/crack.hrb 
 	$(EDIMG)   imgin:../z_tools/fdimg0at.tek \
 		wbinimg src:haribote/ipl09.bin len:512 from:0 to:0 \
 		copy from:haribote/haribote.sys to:@: \
@@ -33,6 +34,8 @@ haribote.img : haribote/ipl09.bin haribote/haribote.sys Makefile \
 		copy from:hello3/hello3.hrb to:@: \
 		copy from:hello4/hello4.hrb to:@: \
 		copy from:hello5/hello5.hrb to:@: \
+        copy from:test1/test1.hrb to:@: \
+		copy from:crack/crack.hrb to:@: \
 		copy from:winhelo/winhelo.hrb to:@: \
 		copy from:winhelo2/winhelo2.hrb to:@: \
 		copy from:winhelo3/winhelo3.hrb to:@: \
@@ -66,9 +69,9 @@ haribote.img : haribote/ipl09.bin haribote/haribote.sys Makefile \
 		copy from:pictdata/fujisan.jpg to:@: \
 		copy from:pictdata/night.bmp to:@: \
 		copy from:nihongo/nihongo.fnt to:@: \
-		imgout:haribote.img
+        imgout:haribote.img
 
-# 僐儅儞僪
+# 命令
 
 run :
 	$(MAKE) haribote.img
@@ -85,7 +88,9 @@ full :
 	$(MAKE) -C a
 	$(MAKE) -C hello3
 	$(MAKE) -C hello4
+	$(MAKE) -C test1
 	$(MAKE) -C hello5
+	$(MAKE) -C crack
 	$(MAKE) -C winhelo
 	$(MAKE) -C winhelo2
 	$(MAKE) -C winhelo3
@@ -140,6 +145,8 @@ clean_full :
 	$(MAKE) -C hello3		clean
 	$(MAKE) -C hello4		clean
 	$(MAKE) -C hello5		clean
+	$(MAKE) -C crack		clean
+	$(MAKE) -C test1		clean
 	$(MAKE) -C winhelo		clean
 	$(MAKE) -C winhelo2		clean
 	$(MAKE) -C winhelo3		clean
@@ -173,6 +180,8 @@ src_only_full :
 	$(MAKE) -C hello3		src_only
 	$(MAKE) -C hello4		src_only
 	$(MAKE) -C hello5		src_only
+	$(MAKE) -C test1		src_only
+	$(MAKE) -C crack		src_only
 	$(MAKE) -C winhelo		src_only
 	$(MAKE) -C winhelo2		src_only
 	$(MAKE) -C winhelo3		src_only
