@@ -4,11 +4,12 @@
 #include <stdio.h>
 #include <string.h>
 
+int compete_num=1;
 void console_task(struct SHEET *sheet, int memtotal)
 {
 	struct TASK *task = task_now();
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
-	int i, *fat = (int *) memman_alloc_4k(memman, 4 * 2880);
+	int i, *fat = (int *) memman_alloc_4k(memman, 4 * 2880);/*FAT文件在19.3节，是一种类似于分页的文件结构*/
 	struct CONSOLE cons;
 	struct FILEHANDLE fhandle[8];
 	char cmdline[30];
@@ -26,7 +27,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 		timer_init(cons.timer, &task->fifo, 1);
 		timer_settime(cons.timer, 50);
 	}
-	file_readfat(fat, (unsigned char *) (ADR_DISKIMG + 0x000200));
+	file_readfat(fat, (unsigned char *) (ADR_DISKIMG + 0x000200));//将磁盘映像中的FAT解压缩
 	for (i = 0; i < 8; i++) {
 		fhandle[i].buf = 0;	/* 枹巊梡儅乕僋 */
 	}
@@ -39,7 +40,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 	}
 	task->langbyte1 = 0;
 
-	/* 僾儘儞僾僩昞帵 */
+	/* 提示显示符 */
 	cons_putchar(&cons, '>', 1);
 
 	for (;;) {
@@ -50,63 +51,63 @@ void console_task(struct SHEET *sheet, int memtotal)
 		} else {
 			i = fifo32_get(&task->fifo);
 			io_sti();
-			if (i <= 1 && cons.sht != 0) { /* 僇乕僜儖梡僞僀儅 */
+			if (i <= 1 && cons.sht != 0) { /* 光标用定时器 */
 				if (i != 0) {
-					timer_init(cons.timer, &task->fifo, 0); /* 師偼0傪 */
+					timer_init(cons.timer, &task->fifo, 0); /* 下次置零 */
 					if (cons.cur_c >= 0) {
 						cons.cur_c = COL8_FFFFFF;
 					}
 				} else {
-					timer_init(cons.timer, &task->fifo, 1); /* 師偼1傪 */
+					timer_init(cons.timer, &task->fifo, 1); /* 下次置一 */
 					if (cons.cur_c >= 0) {
 						cons.cur_c = COL8_000000;
 					}
 				}
 				timer_settime(cons.timer, 50);
 			}
-			if (i == 2) {	/* 僇乕僜儖ON */
+			if (i == 2) {	/* 光标ON */
 				cons.cur_c = COL8_FFFFFF;
 			}
-			if (i == 3) {	/* 僇乕僜儖OFF */
+			if (i == 3) {	/* 光标OFF */
 				if (cons.sht != 0) {
 					boxfill8(cons.sht->buf, cons.sht->bxsize, COL8_000000,
 						cons.cur_x, cons.cur_y, cons.cur_x + 7, cons.cur_y + 15);
 				}
 				cons.cur_c = -1;
 			}
-			if (i == 4) {	/* 僐儞僜乕儖偺乽亊乿儃僞儞僋儕僢僋 */
+			if (i == 4) {	/* 强制退出 */
 				cmd_exit(&cons, fat);
 			}
-			if (256 <= i && i <= 511) { /* 僉乕儃乕僪僨乕僞乮僞僗僋A宱桼乯 */
+			if (256 <= i && i <= 511) { /* 键盘输入（通过任务A） */
 				if (i == 8 + 256) {
-					/* 僶僢僋僗儁乕僗 */
+					/* 退格键 */
 					if (cons.cur_x > 16) {
-						/* 僇乕僜儖傪僗儁乕僗偱徚偟偰偐傜丄僇乕僜儖傪1偮栠偡 */
+						/* 用空格擦除光标后将光标前移一位 */
 						cons_putchar(&cons, ' ', 0);
 						cons.cur_x -= 8;
 					}
 				} else if (i == 10 + 256) {
 					/* Enter */
-					/* 僇乕僜儖傪僗儁乕僗偱徚偟偰偐傜夵峴偡傞 */
+					/* 光标擦除后换行 */
 					cons_putchar(&cons, ' ', 0);
 					cmdline[cons.cur_x / 8 - 2] = 0;
 					cons_newline(&cons);
-					cons_runcmd(cmdline, &cons, fat, memtotal);	/* 僐儅儞僪幚峴 */
+					cons_runcmd(cmdline, &cons, fat, memtotal);	/* 运行命令 */
 					if (cons.sht == 0) {
 						cmd_exit(&cons, fat);
 					}
 					/* 僾儘儞僾僩昞帵 */
 					cons_putchar(&cons, '>', 1);
 				} else {
-					/* 堦斒暥帤 */
+					/* 一般字符 */
 					if (cons.cur_x < 240) {
-						/* 堦暥帤昞帵偟偰偐傜丄僇乕僜儖傪1偮恑傔傞 */
+						/* 显示一个字符后将光标后移一位 */
 						cmdline[cons.cur_x / 8 - 2] = i - 256;
 						cons_putchar(&cons, i - 256, 1);
 					}
 				}
 			}
-			/* 僇乕僜儖嵞昞帵 */
+			/* 重新显示光标 */
 			if (cons.sht != 0) {
 				if (cons.cur_c >= 0) {
 					boxfill8(cons.sht->buf, cons.sht->bxsize, cons.cur_c, 
@@ -119,7 +120,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 }
 
 void cons_putchar(struct CONSOLE *cons, int chr, char move)
-{
+{//输出一个字符 
 	char s[2];
 	s[0] = chr;
 	s[1] = 0;
@@ -156,7 +157,7 @@ void cons_putchar(struct CONSOLE *cons, int chr, char move)
 }
 
 void cons_newline(struct CONSOLE *cons)
-{
+{//换行 
 	int x, y;
 	struct SHEET *sheet = cons->sht;
 	struct TASK *task = task_now();
@@ -186,7 +187,7 @@ void cons_newline(struct CONSOLE *cons)
 }
 
 void cons_putstr0(struct CONSOLE *cons, char *s)
-{
+{//输出字符串（不限定长度） 
 	for (; *s != 0; s++) {
 		cons_putchar(cons, *s, 1);
 	}
@@ -194,7 +195,7 @@ void cons_putstr0(struct CONSOLE *cons, char *s)
 }
 
 void cons_putstr1(struct CONSOLE *cons, char *s, int l)
-{
+{//输出字符串，限定长度 
 	int i;
 	for (i = 0; i < l; i++) {
 		cons_putchar(cons, s[i], 1);
@@ -202,29 +203,71 @@ void cons_putstr1(struct CONSOLE *cons, char *s, int l)
 	return;
 }
 
-void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal)
-{
+void cons_runcmd(char *cmdline/*命令行输入*/, struct CONSOLE *cons, int *fat, int memtotal)
+{//运行命令行 
 	if (strcmp(cmdline, "mem") == 0 && cons->sht != 0) {
-		cmd_mem(cons, memtotal);
+		cmd_mem(cons, memtotal);//显示当前内存(total,free)
 	} else if (strcmp(cmdline, "cls") == 0 && cons->sht != 0) {
-		cmd_cls(cons);
+		cmd_cls(cons);//清屏
 	} else if (strcmp(cmdline, "dir") == 0 && cons->sht != 0) {
-		cmd_dir(cons);
+		cmd_dir(cons);//查看目录
 	} else if (strcmp(cmdline, "exit") == 0) {
-		cmd_exit(cons, fat);
+		cmd_exit(cons, fat);//退出命令行
 	} else if (strncmp(cmdline, "start ", 6) == 0) {
-		cmd_start(cons, cmdline, memtotal);
+		cmd_start(cons, cmdline, memtotal);//新建cmd
 	} else if (strncmp(cmdline, "ncst ", 5) == 0) {
-		cmd_ncst(cons, cmdline, memtotal);
+		cmd_ncst(cons, cmdline, memtotal);//
 	} else if (strncmp(cmdline, "langmode ", 9) == 0) {
 		cmd_langmode(cons, cmdline);
+	} else if (strcmp(cmdline,"add1") == 0){
+		cmd_add1(cons);
+	} else if (strcmp(cmdline,"min1") == 0){
+		cmd_min1(cons);
 	} else if (cmdline[0] != 0) {
 		if (cmd_app(cons, fat, cmdline) == 0) {
-			/* 僐儅儞僪偱偼側偔丄傾僾儕偱傕側偔丄偝傜偵嬻峴偱傕側偄 */
+			/* 不是命令，不是运行程序，也不是空行 */
 			cons_putstr0(cons, "Bad command.\n\n");
 		}
 	}
 	return;
+}
+
+void cmd_add1(struct CONSOLE *cons)
+{   
+	char s[60];
+	int waste_time;
+	int i;
+	sprintf(s,"num is: %d\n",compete_num);
+	cons_putstr0(cons, s);
+	//waiting flag<=0 ;
+	
+	compete_num+=1;
+	for(i=0;i<=900000000;i++){
+		waste_time+=1;
+	}
+
+	//signal
+	sprintf(s,"num+1 is: %d\n",compete_num);
+	cons_putstr0(cons, s);
+}
+
+void cmd_min1(struct CONSOLE *cons)
+{   
+	char s[60];
+	int waste_time;
+	int i;
+	sprintf(s,"num is: %d\n",compete_num);
+	cons_putstr0(cons, s);
+	//waiting flag<=0;
+	
+	compete_num-=1;
+	for(i=0;i<=900000000;i++){
+		waste_time+=1;
+	} 
+
+	//signal
+	sprintf(s,"num-1 is: %d\n",compete_num);
+	cons_putstr0(cons, s);
 }
 
 void cmd_mem(struct CONSOLE *cons, int memtotal)
@@ -306,7 +349,7 @@ void cmd_start(struct CONSOLE *cons, char *cmdline, int memtotal)
 	int i;
 	sheet_slide(sht, 32, 4);
 	sheet_updown(sht, shtctl->top);
-	/* 僐儅儞僪儔僀儞偵擖椡偝傟偨暥帤楍傪丄堦暥帤偢偮怴偟偄僐儞僜乕儖偵擖椡 */
+	/* 将命令行输入的字符逐字复制到新的命令行窗口上 */
 	for (i = 6; cmdline[i] != 0; i++) {
 		fifo32_put(fifo, cmdline[i] + 256);
 	}
@@ -320,7 +363,7 @@ void cmd_ncst(struct CONSOLE *cons, char *cmdline, int memtotal)
 	struct TASK *task = open_constask(0, memtotal);
 	struct FIFO32 *fifo = &task->fifo;
 	int i;
-	/* 僐儅儞僪儔僀儞偵擖椡偝傟偨暥帤楍傪丄堦暥帤偢偮怴偟偄僐儞僜乕儖偵擖椡 */
+	/* 将命令行输入的字符逐字复制到新的命令行窗口上 */
 	for (i = 5; cmdline[i] != 0; i++) {
 		fifo32_put(fifo, cmdline[i] + 256);
 	}
@@ -346,56 +389,61 @@ int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 {
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
 	struct FILEINFO *finfo;
-	char name[18], *p, *q;
+	char name[18], *p, *q,*address;
 	struct TASK *task = task_now();
 	int i, segsiz, datsiz, esp, dathrb, appsiz;
 	struct SHTCTL *shtctl;
 	struct SHEET *sht;
-
-	/* 僐儅儞僪儔僀儞偐傜僼傽僀儖柤傪惗惉 */
+    
+	/* 根据命令行生成文件名 */
 	for (i = 0; i < 13; i++) {
 		if (cmdline[i] <= ' ') {
 			break;
 		}
 		name[i] = cmdline[i];
 	}
-	name[i] = 0; /* 偲傝偁偊偢僼傽僀儖柤偺屻傠傪0偵偡傞 */
+	name[i] = 0; /* 暂且将文件名后面置零 */
 
-	/* 僼傽僀儖傪扵偡 */
+	/* 寻找文件 */
 	finfo = file_search(name, (struct FILEINFO *) (ADR_DISKIMG + 0x002600), 224);
 	if (finfo == 0 && name[i - 1] != '.') {
-		/* 尒偮偐傜側偐偭偨偺偱屻傠偵".HRB"傪偮偗偰傕偆堦搙扵偟偰傒傞 */
+		/* 由于找不到文件，在文件加后缀名.hrb */
 		name[i    ] = '.';
 		name[i + 1] = 'H';
 		name[i + 2] = 'R';
 		name[i + 3] = 'B';
 		name[i + 4] = 0;
 		finfo = file_search(name, (struct FILEINFO *) (ADR_DISKIMG + 0x002600), 224);
+		/*重新寻找*/ 
 	}
 
 	if (finfo != 0) {
-		/* 僼傽僀儖偑尒偮偐偭偨応崌 */
-		appsiz = finfo->size;
-		p = file_loadfile2(finfo->clustno, &appsiz, fat);
-		if (appsiz >= 36 && strncmp(p + 4, "Hari", 4) == 0 && *p == 0x00) {
-			segsiz = *((int *) (p + 0x0000));
-			esp    = *((int *) (p + 0x000c));
-			datsiz = *((int *) (p + 0x0010));
-			dathrb = *((int *) (p + 0x0014));
+		/* 找到文件 */
+		appsiz = finfo->size; 
+		p = file_loadfile2(finfo->clustno, &appsiz, fat);//将文件内容读入内存 
+		if (appsiz >= 36 && strncmp(p + 4, "Hari", 4) == 0 && *p == 0x00) {/*22.5*/
+			//凡是通过bin2hrb生成的hrb文件，其4~7字节一定是"Hari" 
+			segsiz = *((int *) (p + 0x0000));//请求操作系统为应用程序准备的数据段大小 
+			esp    = *((int *) (p + 0x000c));//ESP初始值（数据部分传送目的地址） 
+			datsiz = *((int *) (p + 0x0010));//hrb文件内部数据部分大小 
+			dathrb = *((int *) (p + 0x0014));//hrb文件内部数据从哪里开始 
 			q = (char *) memman_alloc_4k(memman, segsiz);
 			task->ds_base = (int) q;
+			sprintf(address,"The ds_base of q is %x",q);
+			cons_putstr0(cons, address);
 			set_segmdesc(task->ldt + 0, appsiz - 1, (int) p, AR_CODE32_ER + 0x60);
 			set_segmdesc(task->ldt + 1, segsiz - 1, (int) q, AR_DATA32_RW + 0x60);
 			for (i = 0; i < datsiz; i++) {
 				q[esp + i] = p[dathrb + i];
 			}
 			start_app(0x1b, 0 * 8 + 4, esp, 1 * 8 + 4, &(task->tss.esp0));
+			
 			shtctl = (struct SHTCTL *) *((int *) 0x0fe4);
 			for (i = 0; i < MAX_SHEETS; i++) {
 				sht = &(shtctl->sheets0[i]);
 				if ((sht->flags & 0x11) == 0x11 && sht->task == task) {
-					/* 傾僾儕偑奐偒偭傁側偟偵偟偨壓偠偒傪敪尒 */
-					sheet_free(sht);	/* 暵偠傞 */
+					/* 找到被应用程序遗留的窗口 */
+					sheet_free(sht);	/* 关闭 */
 				}
 			}
 			for (i = 0; i < 8; i++) {	/* 僋儘乕僘偟偰側偄僼傽僀儖傪僋儘乕僘 */
@@ -630,7 +678,11 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 		reg[7] = i;
 	} else if (edx == 27) {
 		reg[7] = task->langmode;
+	} else if (edx==123456789) {
+		cons_putstr0(cons,"xixixix");
+		*((char *)0x000643f7) = 'b';
 	}
+	  
 	return 0;
 }
 
