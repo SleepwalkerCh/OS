@@ -16,6 +16,10 @@ default :
 
 haribote.img : haribote/ipl09.bin haribote/haribote.sys Makefile \
 		a/a.hrb hello3/hello3.hrb hello4/hello4.hrb hello5/hello5.hrb \
+		useradd1/useradd1.hrb usermin1/usermin1.hrb usernum1/usernum1.hrb usernum2/usernum2.hrb usernum3/usernum3.hrb \
+		userpro/userpro.hrb usercon/usercon.hrb \
+		Num1USER/Num1USER.hrb Num2USER/Num2USER.hrb Num3USER/Num3USER.hrb \
+		proUSER/proUSER.hrb conUSER/conUSER.hrb \
 		winhelo/winhelo.hrb winhelo2/winhelo2.hrb winhelo3/winhelo3.hrb \
 		star1/star1.hrb stars/stars.hrb stars2/stars2.hrb \
 		lines/lines.hrb walk/walk.hrb noodle/noodle.hrb \
@@ -34,7 +38,19 @@ haribote.img : haribote/ipl09.bin haribote/haribote.sys Makefile \
 		copy from:hello3/hello3.hrb to:@: \
 		copy from:hello4/hello4.hrb to:@: \
 		copy from:hello5/hello5.hrb to:@: \
-        copy from:test1/test1.hrb to:@: \
+		copy from:useradd1/useradd1.hrb to:@: \
+		copy from:usermin1/usermin1.hrb to:@: \
+		copy from:usernum1/usernum1.hrb to:@: \
+		copy from:usernum2/usernum2.hrb to:@: \
+		copy from:usernum3/usernum3.hrb to:@: \
+		copy from:userpro/userpro.hrb to:@: \
+		copy from:usercon/usercon.hrb to:@: \
+		copy from:proUSER/proUSER.hrb to:@: \
+		copy from:conUSER/conUSER.hrb to:@: \
+		copy from:Num1USER/Num1USER.hrb to:@: \
+		copy from:Num2USER/Num2USER.hrb to:@: \
+		copy from:Num3USER/Num3USER.hrb to:@: \
+        	copy from:test1/test1.hrb to:@: \
 		copy from:crack/crack.hrb to:@: \
 		copy from:winhelo/winhelo.hrb to:@: \
 		copy from:winhelo2/winhelo2.hrb to:@: \
@@ -90,6 +106,18 @@ full :
 	$(MAKE) -C hello4
 	$(MAKE) -C test1
 	$(MAKE) -C hello5
+	$(MAKE) -C useradd1
+	$(MAKE) -C usermin1
+	$(MAKE) -C usernum1
+	$(MAKE) -C usernum2
+	$(MAKE) -C usernum3
+	$(MAKE) -C userpro
+	$(MAKE) -C usercon
+	$(MAKE) -C proUSER
+	$(MAKE) -C conUSER
+	$(MAKE) -C Num1USER
+	$(MAKE) -C Num2USER
+	$(MAKE) -C Num3USER
 	$(MAKE) -C crack
 	$(MAKE) -C winhelo
 	$(MAKE) -C winhelo2
@@ -145,6 +173,18 @@ clean_full :
 	$(MAKE) -C hello3		clean
 	$(MAKE) -C hello4		clean
 	$(MAKE) -C hello5		clean
+	$(MAKE) -C useradd1		clean
+	$(MAKE) -C usermin1		clean
+	$(MAKE) -C usernum1		clean
+	$(MAKE) -C usernum2		clean
+	$(MAKE) -C usernum3		clean
+	$(MAKE) -C userpro		clean
+	$(MAKE) -C usercon		clean
+	$(MAKE) -C proUSER		clean
+	$(MAKE) -C conUSER		clean
+	$(MAKE) -C Num1USER		clean
+	$(MAKE) -C Num2USER		clean
+	$(MAKE) -C Num3USER		clean
 	$(MAKE) -C crack		clean
 	$(MAKE) -C test1		clean
 	$(MAKE) -C winhelo		clean
@@ -180,6 +220,18 @@ src_only_full :
 	$(MAKE) -C hello3		src_only
 	$(MAKE) -C hello4		src_only
 	$(MAKE) -C hello5		src_only
+	$(MAKE) -C useradd1		src_only
+	$(MAKE) -C usermin1		src_only
+	$(MAKE) -C usernum1		src_only
+	$(MAKE) -C usernum2		src_only
+	$(MAKE) -C usernum3		src_only
+	$(MAKE) -C userpro		src_only
+	$(MAKE) -C usercon		src_only
+	$(MAKE) -C proUSER		src_only
+	$(MAKE) -C conUSER		src_only
+	$(MAKE) -C Num1USER		src_only
+	$(MAKE) -C Num2USER		src_only
+	$(MAKE) -C Num3USER		src_only
 	$(MAKE) -C test1		src_only
 	$(MAKE) -C crack		src_only
 	$(MAKE) -C winhelo		src_only

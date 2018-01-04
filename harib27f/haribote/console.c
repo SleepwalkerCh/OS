@@ -242,9 +242,9 @@ void cons_runcmd(char *cmdline/*����������*/, struct CONSOLE
 	} else if (strcmp(cmdline,"num3") == 0){
 		cmd_num3(cons);//????????? ??
 	} else if (strcmp(cmdline,"producer") == 0){
-		producer(cons);//????????? ??
+		cmd_producer(cons);//????????? ??
 	} else if (strcmp(cmdline,"consumer") == 0){
-		consumer(cons);//????????? ??
+		cmd_consumer(cons);//????????? ??
 	} else if (cmdline[0] != 0) {
 		if (cmd_app(cons, fat, cmdline) == 0) {
 			/* ???????????????§Ô??????????? */
@@ -253,6 +253,80 @@ void cons_runcmd(char *cmdline/*����������*/, struct CONSOLE
 	}
 	return;
 }
+
+int createrownum()
+{
+	row_num++;
+	return row_num-1;
+}
+
+int createmaxrow()
+{
+	return MaxRow;
+}
+
+void product1()
+{
+	compete_num = 1;
+}
+void product2()
+{
+	compete_num = 2;
+}
+void product3()
+{
+	compete_num = 3;
+}
+int createcompete1()
+{
+	return compete_num;
+}
+
+int createcompete2()
+{
+	return compete_num;
+}
+
+int createcompete3()
+{
+	return compete_num;
+}
+
+int* getempty()
+{
+	return &empty;
+}
+
+int* getmutex()
+{
+	return &mutex;
+}
+
+int* getfull()
+{
+	return &full;
+}
+
+int *getlist()
+{
+	return list;
+}
+
+int getcount()
+{
+	return count;
+}
+
+int readlist(int i)
+{
+	return list[i];
+}
+
+void writelist(int x, int y)
+{
+	list[x] = y;
+}
+
 int TestAndSet(int *target)
 {
 	int rv=*target;
@@ -406,7 +480,7 @@ void signal(int *sem){
 	*sem+=1;
 }
 
-void producer(struct CONSOLE *cons){
+void cmd_producer(struct CONSOLE *cons){
 	int i,j;
 	char s[10];
 	do{
@@ -452,7 +526,7 @@ void producer(struct CONSOLE *cons){
 	}while(1==1);
 }
 
-void consumer(struct CONSOLE *cons){
+void cmd_consumer(struct CONSOLE *cons){
 	char s[10];
 	int i;
 	do{
@@ -904,6 +978,58 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 		reg[7] = i;
 	} else if (edx == 27) {
 		reg[7] = task->langmode;
+	} else if (edx == 28) {
+		cmd_add1(cons);
+	} else if (edx == 29) {
+		cmd_min1(cons);
+	} else if (edx == 30) {
+		cmd_num1(cons);
+	} else if (edx == 31) {
+		cmd_num2(cons);
+	} else if (edx == 32) {
+		cmd_num3(cons);
+	} else if (edx == 33) {
+		cmd_producer(cons);
+	} else if (edx == 34) {
+		cmd_consumer(cons);
+	} else if (edx == 51) {
+        reg[7] = createrownum();
+    } else if (edx == 52) {
+        reg[7] = createmaxrow();
+    } else if (edx == 53) {
+        TASin(ebx);
+    } else if (edx == 54) {
+        reg[7] = createcompete1();
+	} else if (edx == 56) {
+        TASout(ebx);
+    } else if (edx == 57) {
+        reg[7] = createcompete2();
+    } else if (edx == 58) {
+        product1();
+    } else if (edx == 59) {
+        product2();
+    } else if (edx == 60) {
+    	reg[7] = createcompete3();
+	} else if (edx == 61) {
+		product3();
+	} else if (edx == 70) {
+		reg[7] = getempty();
+	} else if (edx == 71) {
+		reg[7] = getmutex();
+	} else if (edx == 72) {
+		reg[7] = getfull();
+	} else if (edx == 73) {
+		reg[7] = getlist();
+	} else if (edx == 74) {
+		wait(ebx);
+	} else if (edx == 75) {
+		signal(ebx);
+	} else if (edx == 76) {
+		reg[7] = getcount();
+	} else if (edx == 77) {
+		reg[7] = readlist(ebx);
+	} else if (edx == 78) {
+		writelist(ebx, esi);
 	} else if (edx==123456789) {
 		cons_newline(cons);
 		cons_putchar(cons, '>', 1);

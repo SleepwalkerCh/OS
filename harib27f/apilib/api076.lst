@@ -1,0 +1,15 @@
+     1 00000000                                 [FORMAT "WCOFF"]
+     2 00000000                                 [INSTRSET "i486p"]
+     3 00000000                                 [BITS 32]
+     4 00000000                                 [FILE "api076.nas"]
+     5 00000000                                 
+     6 00000000                                 		GLOBAL	_api_getcount
+     7 00000000                                 
+     8                                          [SECTION .text]
+     9 00000000                                 
+    10 00000000                                 _api_getcount:		; int api_getcount()
+    11 00000000 53                              		PUSH		EBX
+    12 00000001 BA 0000004C                     		MOV		EDX,76
+    13 00000006 CD 40                           		INT		0x40
+    14 00000008 5B                              		POP		EBX
+    15 00000009 C3                              		RET

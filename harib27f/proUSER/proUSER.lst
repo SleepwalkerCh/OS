@@ -1,0 +1,126 @@
+     1 00000000                                 [FORMAT "WCOFF"]
+     2 00000000                                 [INSTRSET "i486p"]
+     3 00000000                                 [OPTIMIZE 1]
+     4 00000000                                 [OPTION 1]
+     5 00000000                                 [BITS 32]
+     6 00000000                                 	EXTERN	_api_getempty
+     7 00000000                                 	EXTERN	_api_getmutex
+     8 00000000                                 	EXTERN	_api_getfull
+     9 00000000                                 	EXTERN	_api_getcount
+    10 00000000                                 	EXTERN	_api_wait
+    11 00000000                                 	EXTERN	_sprintf
+    12 00000000                                 	EXTERN	_api_putstr0
+    13 00000000                                 	EXTERN	_api_readlist
+    14 00000000                                 	EXTERN	_api_writelist
+    15 00000000                                 	EXTERN	_api_signal
+    16 00000000                                 [FILE "proUSER.c"]
+    17                                          [SECTION .data]
+    18 00000000                                 LC0:
+    19 00000000 70 72 6F 64 75 63 69 6E 67 0A   	DB	"producing",0x0A,0x00
+       0000000A 00 
+    20 0000000B                                 LC1:
+    21 0000000B 25 64 00                        	DB	"%d",0x00
+    22 0000000E                                 LC2:
+    23 0000000E 0A 00                           	DB	0x0A,0x00
+    24 00000010                                 LC3:
+    25 00000010 66 69 6E 69 73 68 0A 00         	DB	"finish",0x0A,0x00
+    26                                          [SECTION .text]
+    27 00000000                                 	GLOBAL	_HariMain
+    28 00000000                                 _HariMain:
+    29 00000000 55                              	PUSH	EBP
+    30 00000001 89 E5                           	MOV	EBP,ESP
+    31 00000003 57                              	PUSH	EDI
+    32 00000004 56                              	PUSH	ESI
+    33 00000005 53                              	PUSH	EBX
+    34 00000006 83 EC 1C                        	SUB	ESP,28
+    35 00000009 E8 [00000000]                   	CALL	_api_getempty
+    36 0000000E 89 45 E0                        	MOV	DWORD [-32+EBP],EAX
+    37 00000011 E8 [00000000]                   	CALL	_api_getmutex
+    38 00000016 89 45 DC                        	MOV	DWORD [-36+EBP],EAX
+    39 00000019 E8 [00000000]                   	CALL	_api_getfull
+    40 0000001E 89 45 D8                        	MOV	DWORD [-40+EBP],EAX
+    41 00000021 E8 [00000000]                   	CALL	_api_getcount
+    42 00000026 89 C7                           	MOV	EDI,EAX
+    43 00000028                                 L2:
+    44 00000028 FF 75 E0                        	PUSH	DWORD [-32+EBP]
+    45 0000002B 8D 5D E4                        	LEA	EBX,DWORD [-28+EBP]
+    46 0000002E E8 [00000000]                   	CALL	_api_wait
+    47 00000033 FF 75 DC                        	PUSH	DWORD [-36+EBP]
+    48 00000036 31 F6                           	XOR	ESI,ESI
+    49 00000038 E8 [00000000]                   	CALL	_api_wait
+    50 0000003D 68 [00000000]                   	PUSH	LC0
+    51 00000042 53                              	PUSH	EBX
+    52 00000043 E8 [00000000]                   	CALL	_sprintf
+    53 00000048 53                              	PUSH	EBX
+    54 00000049 E8 [00000000]                   	CALL	_api_putstr0
+    55 0000004E 83 C4 14                        	ADD	ESP,20
+    56 00000051                                 L10:
+    57 00000051 56                              	PUSH	ESI
+    58 00000052 E8 [00000000]                   	CALL	_api_readlist
+    59 00000057 59                              	POP	ECX
+    60 00000058 85 C0                           	TEST	EAX,EAX
+    61 0000005A 74 06                           	JE	L6
+    62 0000005C 46                              	INC	ESI
+    63 0000005D 83 FE 05                        	CMP	ESI,5
+    64 00000060 7C EF                           	JL	L10
+    65 00000062                                 L6:
+    66 00000062 85 F6                           	TEST	ESI,ESI
+    67 00000064 7E 19                           	JLE	L34
+    68 00000066                                 L15:
+    69 00000066 8D 5E FF                        	LEA	EBX,DWORD [-1+ESI]
+    70 00000069 53                              	PUSH	EBX
+    71 0000006A E8 [00000000]                   	CALL	_api_readlist
+    72 0000006F 50                              	PUSH	EAX
+    73 00000070 56                              	PUSH	ESI
+    74 00000071 89 DE                           	MOV	ESI,EBX
+    75 00000073 E8 [00000000]                   	CALL	_api_writelist
+    76 00000078 83 C4 0C                        	ADD	ESP,12
+    77 0000007B 85 DB                           	TEST	EBX,EBX
+    78 0000007D 7F E7                           	JG	L15
+    79 0000007F                                 L34:
+    80 0000007F 57                              	PUSH	EDI
+    81 00000080 BE 11E1A2FF                     	MOV	ESI,299999999
+    82 00000085 6A 00                           	PUSH	0
+    83 00000087 47                              	INC	EDI
+    84 00000088 E8 [00000000]                   	CALL	_api_writelist
+    85 0000008D 58                              	POP	EAX
+    86 0000008E 5A                              	POP	EDX
+    87 0000008F                                 L20:
+    88 0000008F 4E                              	DEC	ESI
+    89 00000090 79 FD                           	JNS	L20
+    90 00000092 31 F6                           	XOR	ESI,ESI
+    91 00000094                                 L25:
+    92 00000094 56                              	PUSH	ESI
+    93 00000095 8D 5D E4                        	LEA	EBX,DWORD [-28+EBP]
+    94 00000098 46                              	INC	ESI
+    95 00000099 E8 [00000000]                   	CALL	_api_readlist
+    96 0000009E 89 04 24                        	MOV	DWORD [ESP],EAX
+    97 000000A1 68 [0000000B]                   	PUSH	LC1
+    98 000000A6 53                              	PUSH	EBX
+    99 000000A7 E8 [00000000]                   	CALL	_sprintf
+   100 000000AC 53                              	PUSH	EBX
+   101 000000AD E8 [00000000]                   	CALL	_api_putstr0
+   102 000000B2 83 C4 10                        	ADD	ESP,16
+   103 000000B5 83 FE 05                        	CMP	ESI,5
+   104 000000B8 7C DA                           	JL	L25
+   105 000000BA 68 [0000000E]                   	PUSH	LC2
+   106 000000BF 31 F6                           	XOR	ESI,ESI
+   107 000000C1 53                              	PUSH	EBX
+   108 000000C2 E8 [00000000]                   	CALL	_sprintf
+   109 000000C7 53                              	PUSH	EBX
+   110 000000C8 E8 [00000000]                   	CALL	_api_putstr0
+   111 000000CD 68 [00000010]                   	PUSH	LC3
+   112 000000D2 53                              	PUSH	EBX
+   113 000000D3 E8 [00000000]                   	CALL	_sprintf
+   114 000000D8 53                              	PUSH	EBX
+   115 000000D9 E8 [00000000]                   	CALL	_api_putstr0
+   116 000000DE FF 75 DC                        	PUSH	DWORD [-36+EBP]
+   117 000000E1 E8 [00000000]                   	CALL	_api_signal
+   118 000000E6 FF 75 D8                        	PUSH	DWORD [-40+EBP]
+   119 000000E9 E8 [00000000]                   	CALL	_api_signal
+   120 000000EE 83 C4 20                        	ADD	ESP,32
+   121 000000F1                                 L30:
+   122 000000F1 46                              	INC	ESI
+   123 000000F2 81 FE 01C9C37F                  	CMP	ESI,29999999
+   124 000000F8 7E F7                           	JLE	L30
+   125 000000FA E9 FFFFFF29                     	JMP	L2

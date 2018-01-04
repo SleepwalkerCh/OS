@@ -2,7 +2,11 @@ OBJS_API =	api001.obj api002.obj api003.obj api004.obj api005.obj api006.obj \
 			api007.obj api008.obj api009.obj api010.obj api011.obj api012.obj \
 			api013.obj api014.obj api015.obj api016.obj api017.obj api018.obj \
 			api019.obj api020.obj api021.obj api022.obj api023.obj api024.obj \
-			api025.obj api026.obj api027.obj alloca.obj
+			api025.obj api026.obj api027.obj api028.obj api029.obj api030.obj \
+			api031.obj api032.obj api033.obj api034.obj api051.obj api052.obj \
+			api053.obj api054.obj api056.obj api057.obj api058.obj api059.obj \
+			api060.obj api061.obj api070.obj api071.obj api072.obj api073.obj \
+			api074.obj api075.obj api076.obj api077.obj api078.obj alloca.obj
 
 TOOLPATH = ../../z_tools/
 INCPATH  = ../../z_tools/haribote/
