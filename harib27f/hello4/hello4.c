@@ -2,9 +2,6 @@
 
 void HariMain(void)
 {
- char *hello = "hello, world\n";
-       for(;;){
-	api_putstr0(hello);
-        }
+	api_putstr0("hello, world\n");
 	api_end();
 }

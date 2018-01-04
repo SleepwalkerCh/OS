@@ -5,7 +5,7 @@
 #define EFLAGS_AC_BIT		0x00040000
 #define CR0_CACHE_DISABLE	0x60000000
 
-unsigned int memtest(unsigned int start, unsigned int end)//检查范围内内存可用大小 
+unsigned int memtest(unsigned int start, unsigned int end)
 {
 	char flg486 = 0;
 	unsigned int eflg, cr0, i;
@@ -42,7 +42,7 @@ void memman_init(struct MEMMAN *man)
 {
 	man->frees = 0;			/* 可用信息数目 */
 	man->maxfrees = 0;		/* 用于观察可用状况 */
-	man->lostsize = 0;		/* 释放失败的内存大小总和 */
+	man->lostsize = 0;		/* 释放失败的内存大小综合 */
 	man->losts = 0;			/* 释放失败的次数 */
 	return;
 }
@@ -61,7 +61,7 @@ unsigned int memman_alloc(struct MEMMAN *man, unsigned int size)
 /* 分配 */
 {
 	unsigned int i, a;
-	for (i = man->frees - 1; i >= 0; i--) {
+	for (i = 0; i < man->frees; i++) {
 		if (man->free[i].size >= size) {
 			/* 找到足够大的内存 */
 			a = man->free[i].addr;
@@ -79,7 +79,6 @@ unsigned int memman_alloc(struct MEMMAN *man, unsigned int size)
 	}
 	return 0; /* 偁偒偑側偄 */
 }
-
 
 int memman_free(struct MEMMAN *man, unsigned int addr, unsigned int size)
 /* 释放内存 */

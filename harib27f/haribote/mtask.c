@@ -5,7 +5,7 @@
 struct TASKCTL *taskctl;
 struct TIMER *task_timer;
 
-struct TASK *task_now(void)
+struct TASK *task_now(void)//用于返回 活动中的struct TASK 的内存地址 
 {
 	struct TASKLEVEL *tl = &taskctl->level[taskctl->now_lv];
 	return tl->tasks[tl->now];
@@ -65,7 +65,7 @@ void task_switchsub(void)
 	return;
 }
 
-void task_idle(void)
+void task_idle(void)//哨兵 
 {
 	for (;;) {
 		io_hlt();
@@ -122,9 +122,9 @@ struct TASK *task_alloc(void)
 	for (i = 0; i < MAX_TASKS; i++) {
 		if (taskctl->tasks0[i].flags == 0) {
 			task = &taskctl->tasks0[i];
-			task->flags = 1; /* 巊梡拞儅乕僋 */
+			task->flags = 1; /* 正在使用的标志 */
 			task->tss.eflags = 0x00000202; /* IF = 1; */
-			task->tss.eax = 0; /* 偲傝偁偊偢0偵偟偰偍偔偙偲偵偡傞 */
+			task->tss.eax = 0; /* 先设为0 */
 			task->tss.ecx = 0;
 			task->tss.edx = 0;
 			task->tss.ebx = 0;
@@ -136,11 +136,11 @@ struct TASK *task_alloc(void)
 			task->tss.fs = 0;
 			task->tss.gs = 0;
 			task->tss.iomap = 0x40000000;
-			task->tss.ss0 = 0;
+			task->tss.ss0 = 0;//应用程序运行时,一定不为0，不运行时一定为0 
 			return task;
 		}
 	}
-	return 0; /* 傕偆慡晹巊梡拞 */
+	return 0; /* 已全部正在使用 */
 }
 
 void task_run(struct TASK *task, int level, int priority)
